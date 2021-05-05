@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -397,19 +397,19 @@ SQL;
             $id = (int)$award['id'];
             if ($id == 2051907)
             {
-                $awards[$i]['type'] = 3; // for medal image
+                //$awards[$i]['type'] = 3; // for medal image
                 $data = ['id' => $award['player_id'], 'name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
                 $view->set('first_place', $data);
             }
             else if ($id == 2051919)
             {
-                $awards[$i]['type'] = 4; // for medal image
+                //$awards[$i]['type'] = 4; // for medal image
                 $data = ['id' => $award['player_id'], 'name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
                 $view->set('second_place', $data);
             }
             else if ($id == 2051902)
             {
-                $awards[$i]['type'] = 5; // for medal image
+                //$awards[$i]['type'] = 5; // for medal image
                 $data = ['id' => $award['player_id'], 'name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
                 $view->set('third_place', $data);
             }

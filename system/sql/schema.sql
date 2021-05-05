@@ -19,12 +19,16 @@ DROP VIEW IF EXISTS `top_player_army_view`;
 DROP VIEW IF EXISTS `top_player_kit_view`;
 DROP VIEW IF EXISTS `top_player_vehicle_view`;
 DROP VIEW IF EXISTS `top_player_weapon_view`;
+DROP VIEW IF EXISTS `eligible_smoc_view`;
+DROP VIEW IF EXISTS `eligible_general_view`;
 DROP PROCEDURE IF EXISTS `generate_rising_star`;
 DROP PROCEDURE IF EXISTS `create_player`;
 DROP TABLE IF EXISTS `battlespy_message`;
 DROP TABLE IF EXISTS `battlespy_report`;
 DROP TABLE IF EXISTS `ip2nationcountries`;
 DROP TABLE IF EXISTS `ip2nation`;
+DROP TABLE IF EXISTS `eligible_smoc`;
+DROP TABLE IF EXISTS `eligible_general`;
 DROP TABLE IF EXISTS `risingstar`;
 DROP TABLE IF EXISTS `player_weapon`;
 DROP TABLE IF EXISTS `player_unlock`;
@@ -45,11 +49,13 @@ DROP TABLE IF EXISTS `player_round_history`;
 DROP TABLE IF EXISTS `player`;
 DROP TABLE IF EXISTS `weapon`;
 DROP TABLE IF EXISTS `vehicle`;
+DROP TABLE IF EXISTS `unlock_requirement`;
 DROP TABLE IF EXISTS `unlock`;
 DROP TABLE IF EXISTS `round_history`;
 DROP TABLE IF EXISTS `round`;
 DROP TABLE IF EXISTS `game_mod`;
 DROP TABLE IF EXISTS `game_mode`;
+DROP TABLE IF EXISTS `failed_snapshot`;
 DROP TABLE IF EXISTS `server_auth_ip`;
 DROP TABLE IF EXISTS `server`;
 DROP TABLE IF EXISTS `stats_provider_auth_ip`;
@@ -248,6 +254,18 @@ CREATE TABLE `unlock` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table structure for table `unlock_requirement`
+--
+
+CREATE TABLE `unlock_requirement` (
+  `parent_id` SMALLINT UNSIGNED,
+  `child_id` SMALLINT UNSIGNED,
+  PRIMARY KEY(`parent_id`, `child_id`),
+  FOREIGN KEY(`parent_id`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`child_id`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table structure for table `vehicle`
 --
 
@@ -276,9 +294,9 @@ CREATE TABLE `weapon` (
 CREATE TABLE `failed_snapshot` (
   `id` INT UNSIGNED AUTO_INCREMENT,                      -- Row ID
   `server_id` SMALLINT UNSIGNED NOT NULL,
-  `timestamp` INT UNSIGNED NOT NULL DEFAULT 0,  -- Snapshot award short name, case sensitive
-  `filename` VARCHAR(128),             -- Full name of the award, human readable
-  `reason`  VARCHAR(128),              -- 0 = ribbon, 1 = Badge, 2 = medal
+  `timestamp` INT UNSIGNED NOT NULL DEFAULT 0,  --
+  `filename` VARCHAR(128),             --
+  `reason`  VARCHAR(128),              --
   PRIMARY KEY(`id`),
   FOREIGN KEY(`server_id`) REFERENCES server(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -708,6 +726,34 @@ CREATE TABLE `risingstar` (
 CREATE INDEX `idx_risingstar_pid` ON risingstar(`player_id`);
 
 --
+-- Table structure for table `eligible_smoc`
+--
+
+CREATE TABLE `eligible_smoc` (
+  `player_id` INT UNSIGNED PRIMARY KEY,
+  `global_score` INT UNSIGNED NOT NULL,
+  `rank_score` INT UNSIGNED NOT NULL,
+  `rank_time` INT UNSIGNED NOT NULL,
+  `rank_games` SMALLINT UNSIGNED NOT NULL,
+  `spm` INT UNSIGNED NOT NULL,
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `eligible_general`
+--
+
+CREATE TABLE `eligible_general` (
+  `player_id` INT UNSIGNED PRIMARY KEY,
+  `global_score` INT UNSIGNED NOT NULL,
+  `rank_score` INT UNSIGNED NOT NULL,
+  `rank_time` INT UNSIGNED NOT NULL,
+  `rank_games` SMALLINT UNSIGNED NOT NULL,
+  `spm` INT UNSIGNED NOT NULL,
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table structure for table `battlespy_report`
 --
 
@@ -797,6 +843,24 @@ CREATE OR REPLACE VIEW `rising_star_view` AS
   SELECT pos, player_id, weeklyscore, p.name, p.rank_id, p.country, p.joined, p.time
   FROM risingstar AS r
     LEFT JOIN player AS p ON player_id = p.id;
+
+CREATE OR REPLACE VIEW `eligible_smoc_view` AS
+  SELECT es.player_id AS `player_id`, es.global_score AS `global_score`, es.rank_games AS `rank_games`,
+         es.rank_score AS `rank_score`,  es.rank_time AS `rank_time`, es.spm AS `spm`, p.rank_id AS `rank_id`, p.name AS `name`,
+         p.lastonline AS `lastonline`, p.permban AS `banned`, p.country AS `country`, r.weeklyscore AS `weekly_score`,
+         (CASE WHEN p.password IS NOT NULL AND p.password <> '' THEN 0 ELSE 1 END) AS `is_bot`
+  FROM eligible_smoc AS es
+    LEFT JOIN player AS p on es.player_id = p.id
+    LEFT JOIN risingstar AS r on p.id = r.player_id;
+
+CREATE OR REPLACE VIEW `eligible_general_view` AS
+  SELECT es.player_id AS `player_id`, es.global_score AS `global_score`, es.rank_games AS `rank_games`,
+         es.rank_score AS `rank_score`,  es.rank_time AS `rank_time`, es.spm AS `spm`, p.rank_id AS `rank_id`, p.name AS `name`,
+         p.lastonline AS `lastonline`, p.permban AS `banned`, p.country AS `country`, r.weeklyscore AS `weekly_score`,
+         (CASE WHEN p.password IS NOT NULL AND p.password <> '' THEN 0 ELSE 1 END) AS `is_bot`
+  FROM eligible_general AS es
+    LEFT JOIN player AS p on es.player_id = p.id
+    LEFT JOIN risingstar AS r on p.id = r.player_id;
 
 -- --------------------------------------------------------
 -- Create Procedures

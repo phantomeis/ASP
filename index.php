@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -13,9 +13,9 @@
  * linking of files, Also define ROOT and system paths
  */
 define('BF2_ADMIN', true);
-define('CODE_VERSION', '3.0.3');
-define('CODE_VERSION_DATE', '2019-3-12');
-define('DB_EXPECTED_VERSION', '3.0.7');
+define('CODE_VERSION', '3.1.0');
+define('CODE_VERSION_DATE', '2021-4-21');
+define('DB_EXPECTED_VERSION', '3.1.0');
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
 define('SYSTEM_PATH', ROOT . DS . 'system');

@@ -3,13 +3,14 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 use System\Battlefield2;
 use System\BF2\Player;
 use System\BF2\RankCalculator;
+use System\Collections\Dictionary;
 use System\Database\UpdateOrInsertQuery;
 use System\IO\File;
 use System\TimeHelper;
@@ -108,8 +109,8 @@ class PlayerModel
      */
 
     /**
-     * Deletes all bot records from the player table, and all associated
-     * records from the other stats tables
+     * Deletes all bot records from the player table that have a play time of 0, 
+	 * and all associated records from the other stats tables.
      *
      * @return int The number of rows affected by the last SQL statement
      */
@@ -901,6 +902,56 @@ class PlayerModel
         $view->set('medals', $medals);
         $view->set('badges', $badges);
         $view->set('ribbons', $ribbons);
+    }
+
+    /**
+     * Appends a players unlocks data to a view
+     *
+     * @param int $id
+     * @param View $view
+     */
+    public function attachUnlockData($id, View $view)
+    {
+        // Init
+        $viewData = [];
+
+        // Get all current unlocks, and set the status to locked by default
+        $unlockStatus = new Dictionary();
+        $result = $this->pdo->query("SELECT u.`id` AS `id`, u.`desc` AS `desc`, k.name AS `kit` FROM `unlock` AS u JOIN kit AS k on u.kit_id = k.id ORDER BY u.`id` ASC");
+        while ($row = $result->fetch())
+        {
+            $unlockStatus[$row['id']] = [false, $row['desc'], $row['kit'], 0];
+        }
+
+        // Get players current unlocks
+        $query = "SELECT `unlock_id`, `timestamp` FROM `player_unlock` WHERE `player_id`={$id} ORDER BY `unlock_id` ASC";
+        $result = $this->pdo->query($query);
+        while ($row = $result->fetch())
+        {
+            // Dictionary array values are not referenced, so we must Get then Set
+            $item = $unlockStatus[$row['unlock_id']];
+            $item[0] = true;
+            $item[3] = $row['timestamp'];
+
+            // IMPORTANT! Dictionary values are not referenced, so we must Set the
+            // full array value again after changing any values!
+            $unlockStatus[$row['unlock_id']] = $item;
+        }
+
+        foreach ($unlockStatus as $uid => $unlock)
+        {
+            $data = [
+                'id' => $uid,
+                'level' => ($unlock[0] == true) ? "1" : "0",
+                'name' => $unlock[1],
+                'kit' => $unlock[2],
+                'timestamp' => ($unlock[0] == true) ? date('F jS, Y g:i A T', (int)$unlock[3]) : "Never"
+            ];
+
+            $viewData[] = $data;
+        }
+
+        $view->set('unlocks', $viewData);
     }
 
     /**

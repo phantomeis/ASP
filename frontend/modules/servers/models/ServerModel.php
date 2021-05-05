@@ -3,10 +3,11 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
+
 use GameQ\GameQ;
 use System\BF2\Player;
 use System\Collections\Dictionary;
@@ -87,7 +88,9 @@ SQL;
             $id = (int)$row['provider_id'];
             if ($providers->containsKey($id))
             {
-                $providers[$id][] = $row['address'];
+                $p = $providers[$id];
+                $p[] =  $row['address'];
+                $providers[$id] = $p;
             }
             else
             {

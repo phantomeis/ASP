@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -64,6 +64,7 @@ class Battlespy extends \System\Controller
         // Load view
         $view = new View('config', 'battlespy');
         $view->set('battlespy_enable', Config::Get('battlespy_enable'));
+        $view->set('battlespy_rank_check', Config::GetOrDefault('battlespy_rank_check', 1));
         $view->set('battlespy_max_spm', Config::Get('battlespy_max_spm'));
         $view->set('battlespy_max_kpm', Config::Get('battlespy_max_kpm'));
         $view->set('battlespy_max_target_kills', Config::Get('battlespy_max_target_kills'));

@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -40,7 +40,7 @@ class Home extends Controller
         $view = new View('index', 'home');
         $view->set('php_version', PHP_VERSION);
         $view->set('server_name', php_uname('s'));
-        $view->set('server_version', apache_get_version());
+        $view->set('server_version', $this->homeModel->getApacheVersion());
         $view->set('last_login', date('F jS, Y g:i A T', Config::Get('admin_last_login')));
 
         // Get database version, and size. Convert size to MB
@@ -67,6 +67,14 @@ class Home extends Controller
         $inactive = $this->homeModel->getNumActivePlayersLastWeek();
         $view->set('active_player_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
 
+        // Number of new players
+        $active = $this->homeModel->getNumNewPlayersThisWeek();
+        $view->set('num_new_players', number_format($active));
+
+        // Number of new players last week
+        $inactive = $this->homeModel->getNumNewPlayersLastWeek();
+        $view->set('new_player_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
+
         // Number of Active servers
         $active = $this->homeModel->getNumActiveServersThisWeek();
         $view->set('num_active_servers', number_format($active));
@@ -78,10 +86,11 @@ class Home extends Controller
         // Attach chart plotting scripts
         $view->attachScript("./frontend/js/flot/jquery.flot.min.js");
         $view->attachScript("./frontend/js/flot/plugins/jquery.flot.tooltip.js");
-        $view->attachScript("./frontend/modules/home/js/chart.js");
+        $view->attachScript("./frontend/modules/home/js/index.js");
 
         // Attach stylesheets
         $view->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
+        $view->attachStylesheet("/ASP/frontend/modules/home//css/index.css");
 
         // Draw View
         $view->render();
@@ -89,10 +98,10 @@ class Home extends Controller
 
     /**
      * @protocol    GET
-     * @request     /ASP/home/chartData
+     * @request     /ASP/home/gamesChartData
      * @output      json
      */
-    public function getChartData()
+    public function getGamesChartData()
     {
         // Hide errors. Specifically, Daylight Savings errors
         ini_set("display_errors", "0");
@@ -104,7 +113,28 @@ class Home extends Controller
         $this->loadModel('HomeModel', 'home');
 
         // Use our model to do all the hard work
-        $data = $this->homeModel->getChartData();
+        $data = $this->homeModel->getGamesPlayedChartData();
+        echo json_encode($data);
+    }
+
+    /**
+     * @protocol    GET
+     * @request     /ASP/home/rankChartData
+     * @output      json
+     */
+    public function getRankChartData()
+    {
+        // Hide errors. Specifically, Daylight Savings errors
+        ini_set("display_errors", "0");
+
+        // Require database connection
+        $this->requireDatabase(true);
+
+        // Load model
+        $this->loadModel('HomeModel', 'home');
+
+        // Use our model to do all the hard work
+        $data = $this->homeModel->getRankDistChartData();
         echo json_encode($data);
     }
 }

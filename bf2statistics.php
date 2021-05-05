@@ -1,6 +1,6 @@
 <?php
 /*
-	Copyright (C) 2006-2019  BF2Statistics
+	Copyright (C) 2006-2021  BF2Statistics
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ namespace System
     {
         header("Content-Type: text/plain; charset=utf-8");
         header('HTTP/1.1 403 Forbidden');
-        die(_ERR_RESPONSE . "You are not authorised to access this page.");
+        die(_ERR_RESPONSE . "You are not authorized to access this page.");
     }
 
     // Make Sure Script doesn't timeout even if the user disconnects!

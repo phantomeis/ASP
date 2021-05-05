@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -75,7 +75,7 @@ class Install extends \System\Controller
         foreach ($_POST as $item => $val)
         {
             $key = explode('__', $item);
-            if ($key[0] == 'cfg')
+            if (count($key) > 1 && $key[0] == 'cfg')
             {
                 // Fix array
                 if ($key[1] == 'admin_hosts')
@@ -87,6 +87,7 @@ class Install extends \System\Controller
 
         // Save changes
         Config::Save();
+        $connection = null;
 
         // Try to connect to the database with new settings
         try
